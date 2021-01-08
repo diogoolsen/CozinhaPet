@@ -42,11 +42,3 @@ class Ingredient():
         if unity == '':
             raise ValueError('Unidade do ingrediente inválido')
 
-    # def generateBSON(self):
-    #     pass
-
-    # def getCost(self):
-    #     pass
-
-    # def convertML4G(self):
-    #     pass
