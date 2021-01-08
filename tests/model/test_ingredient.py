@@ -1,215 +1,234 @@
 
 # import pytest
-from datetime import date
+import datetime
 
 from pytest import approx, raises
 
 from src.model.ingredient import Ingredient
 
 
-class Test_Ingredient():
-    def test_create_ingredient_v1(self):
+class TestIngredient():
+    def assert_item_by_item(self, actual, expected, message=''):
+
+        assert actual['name'] == expected['name'], message
+        assert actual['type'] == expected['type'], message
+        assert actual['unity'] == expected['unity'], message
+
+        assert isinstance(actual['factorsLog'][0]['date'],
+                          datetime.datetime)
+        assert actual['factorsLog'][0]['cookingFactor'] ==\
+            approx(expected['factorsLog'][0]['cookingFactor']), message
+        assert actual['factorsLog'][0]['safetyMargin'] ==\
+            approx(expected['factorsLog'][0]['safetyMargin']), message
+        assert actual['factorsLog'][0]['actualFactor'] ==\
+            approx(expected['factorsLog'][0]['actualFactor']), message
+
+        assert isinstance(actual['costLog'][0]['date'],
+                          datetime.datetime)
+        assert actual['costLog'][0]['price'] ==\
+            approx(expected['costLog'][0]['price']), message
+        assert actual['costLog'][0]['amount'] ==\
+            approx(expected['costLog'][0]['amount']), message
+        assert actual['costLog'][0]['costPer1Unity'] ==\
+            approx(expected['costLog'][0]['costPer1Unity']), message
+        assert actual['costLog'][0]['costPer1K'] ==\
+            approx(expected['costLog'][0]['costPer1K']), message
+
+    def test_create_ingredient_OK_v1(self):
 
         name = 'abobrinha'
         type = 'vegetal'
-        cost = '3.14'
-        unity = 'Kg'
+        unity = 'g'
+        price = '3.14'
 
-        actual = Ingredient(name, type, cost, unity).getDict()
+        actual = Ingredient(name, type, unity, price).dict
 
-        cost_dict = {
+        expected_factors_dict = {
+            'date': datetime.datetime.now(),
+            'cookingFactor': 1.,
+            'safetyMargin': 1.,
+            'actualFactor': 1.
+        }
+
+        expected_cost_dict = {
+            'date': datetime.datetime.now(),
+            'price': 3.14,
+            'amount': 1000.,
             'costPer1Unity': 0.00314,
-            'date': date.today()
+            'costPer1K': 3.14
         }
 
         expected = {
             'name': 'abobrinha',
             'type': 'vegetal',
-            'unity': 'Kg',
+            'unity': 'g',
             'amount': 1000.,
-            'cookingFactor': 1.,
-            'safetyMargin': 1.,
-            'costLog': [cost_dict]
+            'factorsLog': [expected_factors_dict],
+            'costLog': [expected_cost_dict]
         }
 
-        message = ('test_create_ingredient returned'
+        message = ('test_create_ingredient_OK_v1 returned'
                    '{0}'
                    'instead of'
                    '{1}'.format(actual, expected)
                    )
 
-        print(actual)
-        assert actual['name'] == expected['name'], message
-        assert actual['type'] == expected['type'], message
-        assert actual['unity'] == expected['unity'], message
-        assert actual['amount'] == expected['amount'], message
-        assert actual['cookingFactor'] == expected['cookingFactor'], message
-        assert actual['safetyMargin'] == expected['safetyMargin'], message
-        assert actual['costLog'][0]['costPer1Unity'] ==\
-            approx(expected['costLog'][0]['costPer1Unity']), message
-        assert actual['costLog'][0]['date'] ==\
-            expected['costLog'][0]['date'], message
+        self.assert_item_by_item(actual, expected, message)
 
-    def test_create_ingredient_v2(self):
+    def test_create_ingredient_OK_v2(self):
 
-        name = 'Fígado Bovino'
+        name = 'figado bovino'
         type = 'carne'
-        cost = '32.99'
-        unity = 'Kg'
+        unity = 'g'
+        price = '32.5'
+        amount = '500'
+        cookingFactor = '0.75'
+        safetyMargin = '1.05'
 
         actual = Ingredient(name,
                             type,
-                            cost,
                             unity,
-                            cookingFactor=0.78,
-                            safetyMargin=1.05).getDict()
+                            price,
+                            amount,
+                            cookingFactor,
+                            safetyMargin).dict
 
-        cost_dict = {
-            'costPer1Unity': 0.03299,
-            'date': date.today()
-        }
-
-        expected = {
-            'name': 'Fígado Bovino',
-            'type': 'carne',
-            'unity': 'Kg',
-            'cookingFactor': 0.78,
+        expected_factors_dict = {
+            'date': datetime.datetime.now(),
+            'cookingFactor': 0.75,
             'safetyMargin': 1.05,
-            'costLog': [cost_dict]
+            'actualFactor': 0.7875
         }
 
-        message = ('test_create_ingredient returned'
-                   '{0}'
-                   'instead of'
-                   '{1}'.format(actual, expected)
-                   )
-
-        print(actual)
-        assert actual['name'] == expected['name'], message
-        assert actual['type'] == expected['type'], message
-        assert actual['unity'] == expected['unity'], message
-        assert actual['cookingFactor'] == expected['cookingFactor'], message
-        assert actual['safetyMargin'] == expected['safetyMargin'], message
-        assert actual['costLog'][0]['costPer1Unity'] == \
-            approx(expected['costLog'][0]['costPer1Unity']), message
-        assert actual['costLog'][0]['date'] ==\
-            expected['costLog'][0]['date'], message
-
-    def test_create_ingredient_v3(self):
-
-        name = 'Óleo de Coco'
-        type = 'complemento'
-        cost = '32'
-        unity = 'ml'
-
-        actual = Ingredient(name,
-                            type,
-                            cost,
-                            unity,
-                            amount=500).getDict()
-
-        cost_dict = {
-            'costPer1Unity': 0.064,
-            'date': date.today()
+        expected_cost_dict = {
+            'date': datetime.datetime.now(),
+            'price': 32.5,
+            'amount': 500.,
+            'costPer1Unity': 0.065,
+            'costPer1K': 65
         }
 
         expected = {
-            'name': 'Óleo de Coco',
-            'type': 'complemento',
-            'unity': 'ml',
-            'cookingFactor': 1,
-            'safetyMargin': 1,
-            'costLog': [cost_dict]
+            'name': 'figado bovino',
+            'type': 'carne',
+            'unity': 'g',
+            'amount': 500.,
+            'factorsLog': [expected_factors_dict],
+            'costLog': [expected_cost_dict]
         }
 
-        message = ('test_create_ingredient returned'
+        message = ('test_create_ingredient_OK_v2 returned'
                    '{0}'
                    'instead of'
                    '{1}'.format(actual, expected)
                    )
 
-        print(actual)
-        assert actual['name'] == expected['name'], message
-        assert actual['type'] == expected['type'], message
-        assert actual['unity'] == expected['unity'], message
-        assert actual['cookingFactor'] == expected['cookingFactor'], message
-        assert actual['safetyMargin'] == expected['safetyMargin'], message
-        assert actual['costLog'][0]['costPer1Unity'] == \
-            approx(expected['costLog'][0]['costPer1Unity']), message
-        assert actual['costLog'][0]['date'] ==\
-            expected['costLog'][0]['date'], message
+        self.assert_item_by_item(actual, expected, message)
 
-    def test_create_ingredient_v4(self):
+    def test_create_ingredient_validate_v1(self):
 
+        name = ''
         type = 'complemento'
-        cost = '32'
         unity = 'ml'
+        price = '32'
 
         with raises(ValueError) as exception_info:
             # store the exception
-            Ingredient('', type, cost, unity)
+            Ingredient(name, type, unity, price)
 
         # Check if ValueError contains correct message
-        assert exception_info.match(
-            'ingredient.py->Ingredient->__init__ - '
-            'Nome do ingrediente inválido')
+        assert exception_info.match('Nome do ingrediente inválido.')
 
-    def test_create_ingredient_v5(self):
+    def test_create_ingredient_validate_v2(self):
 
         name = 'Óleo de coco'
-        cost = '32'
+        type = ''
         unity = 'ml'
+        price = '32'
 
         with raises(ValueError) as exception_info:
             # store the exception
-            Ingredient(name, '', cost, unity)
+            Ingredient(name, type, unity, price)
 
         # Check if ValueError contains correct message
-        assert exception_info.match(
-            'ingredient.py->Ingredient->__init__ - '
-            'Nome do tipo inválido')
+        assert exception_info.match('Tipo do ingrediente inválido.')
 
-    def test_create_ingredient_v6(self):
+    def test_create_ingredient_validate_v3(self):
 
         name = 'Óleo de coco'
         type = 'complemento'
-        unity = 'ml'
+        unity = ''
+        price = '32'
 
         with raises(ValueError) as exception_info:
             # store the exception
-            Ingredient(name, type, '', unity)
+            Ingredient(name, type, unity, price)
 
         # Check if ValueError contains correct message
-        assert exception_info.match(
-            'ingredient.py->Ingredient->__init__ - '
-            'Custo do ingrediente inválido')
+        assert exception_info.match('Unidade do ingrediente inválido')
 
-    def test_create_ingredient_v7(self):
-
-        name = 'Óleo de coco'
-        type = 'complemento'
-        cost = '32'
-
-        with raises(ValueError) as exception_info:
-            # store the exception
-            Ingredient(name, type, cost, '')
-
-        # Check if ValueError contains correct message
-        assert exception_info.match(
-            'ingredient.py->Ingredient->__init__ - '
-            'Unidade do ingrediente inválido')
-
-    def test_create_ingredient_v8(self):
+    def test_create_ingredient_validate_v4(self):
 
         name = 'Óleo de coco'
         type = 'complemento'
         unity = 'ml'
+        price = '32,5'
 
         with raises(ValueError) as exception_info:
             # store the exception
-            Ingredient(name, type, '32x', unity)
+            Ingredient(name, type, unity, price)
+
+        # Check if ValueError contains correct message
+        assert exception_info.match('Custo do ingrediente inválido.')
+
+    def test_create_ingredient_validate_v5(self):
+
+        name = 'Óleo de coco'
+        type = 'complemento'
+        unity = 'ml'
+        price = '32'
+        amount = '22x'
+
+        with raises(ValueError) as exception_info:
+            # store the exception
+            Ingredient(name, type, unity, price, amount)
+
+        # Check if ValueError contains correct message
+        assert exception_info.match('Quantidade de ingrediente inválida.')
+
+    def test_create_ingredient_validate_v6(self):
+
+        name = 'Óleo de coco'
+        type = 'complemento'
+        unity = 'ml'
+        price = '32'
+        amount = '22'
+        cookingFactor = '1,2'
+        safetyMargin = '1.1'
+
+        with raises(ValueError) as exception_info:
+            # store the exception
+            Ingredient(name, type, unity, price, amount,
+                       cookingFactor, safetyMargin)
+
+        # Check if ValueError contains correct message
+        assert exception_info.match('Fator de cocção do ingrediente inválido.')
+
+    def test_create_ingredient_validate_v7(self):
+
+        name = 'Óleo de coco'
+        type = 'complemento'
+        unity = 'ml'
+        price = '32'
+        amount = '22'
+        cookingFactor = '1.2'
+        safetyMargin = '1,1'
+
+        with raises(ValueError) as exception_info:
+            # store the exception
+            Ingredient(name, type, unity, price, amount,
+                       cookingFactor, safetyMargin)
 
         # Check if ValueError contains correct message
         assert exception_info.match(
-            'ingredient.py->Ingredient->__init__ - '
-            'Custo do ingrediente inválido - não é formato numérico')
+            'Margem de segurança do ingrediente inválida.')

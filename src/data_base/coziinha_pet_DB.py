@@ -3,21 +3,31 @@ from pymongo import MongoClient
 
 
 class CozinhaPetDB():
+
     def __init__(self):
 
         # Client connects to "localhost" by default
         self.client = MongoClient()
 
-        # Create local "nobel" database on the fly
-        # Acessa o banco de dados nobel
+        # Create local 'CozinhaPetDB' database on the fly
+        # Acessa o banco de dados 'CozinhaPetDB'
         self.CozinhaPetDB = self.client.CozinhaPetDB
 
-        # Acessa a coleção prizes
+        # Acessa a coleção 'Ingredientes'
         self.Ingredientes = self.CozinhaPetDB.Ingredientes
 
-    def addIngredient(self, ingredient):
+    def getAll(self):
+        return self.Ingredientes.find()
+
+    def getIngredientByName(self, name):
+        return self.Ingredientes.find_one({'name': name})
+
+    def addIngredient(self, dict):
         # Verificar se já não está no banco
-        pass
+        if self.Ingredientes.find_one({'name': dict['name']}):
+            raise ValueError('Item já cadastrado.')
+        else:
+            self.Ingredientes.insert_one(dict)
 
     def getIngredient_id(self, name):
         pass

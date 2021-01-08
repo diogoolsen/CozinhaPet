@@ -1,5 +1,6 @@
 
-from datetime import date
+from src.model.cost_item import CostItem
+from src.model.factors_item import FactorsItem
 
 
 class Ingredient():
@@ -7,66 +8,39 @@ class Ingredient():
                  name: str,
                  type: str,     # meat, vegetable, supplement
                  unity: str,    # g, ml, undefined (if supplement)
-                 cookingFactor: float = 1.,
-                 safetyMargin: float = 1.,
-                 stockLog: bool = False) -> None:
+                 price: str,
+                 amount: str = '1000',
+                 cookingFactor: str = '1.',
+                 safetyMargin: str = '1.') -> None:
 
-        # Validate
-        if name == '':
-            raise ValueError(
-                'ingredient.py->Ingredient->__init__ - '
-                'Nome do ingrediente inválido')
+        try:
+            self.validate(name, type, unity)
 
-        if type == '':
-            raise ValueError(
-                'ingredient.py->Ingredient->__init__ - '
-                'Nome do tipo inválido')
+            costItem = CostItem(price, amount)
+            factorsItem = FactorsItem(cookingFactor, safetyMargin)
+        except ValueError as Error:
+            raise Error
 
-        if unity == '':
-            raise ValueError(
-                'ingredient.py->Ingredient->__init__ - '
-                'Unidade do ingrediente inválido')
-
-        # if cost == '':
-        #     raise ValueError(
-        #         'ingredient.py->Ingredient->__init__ - '
-        #         'Custo do ingrediente inválido')
-
-        # try:
-        #     float(cost)
-        # except ValueError:
-        #     raise ValueError(
-        #         'ingredient.py->Ingredient->__init__ - '
-        #         'Custo do ingrediente inválido - não é formato numérico')
-
-        # costPer1Unity = (float(cost) / float(amount))
-
-        # if costDate is None:
-        #     costDate = date.today()
-
-        # cost_dict = {
-        #     'costPer1Unity': costPer1Unity,
-        #     'date': costDate
-        # }
-
-        factors_list = {
-            'date': date.today(),
-            'cookingFactor': cookingFactor,
-            'safetyMargin': safetyMargin,
-            'actualFactor': cookingFactor * safetyMargin
-        }
-
-        self.ingredient = {
+        self.dict = {
             'name': name,
             'type': type,
             'unity': unity,
-            'cookingFactor': cookingFactor,
-            'safetyMargin': safetyMargin,
-            'costLog': [factors_list]
+            'factorsLog': [factorsItem.dict],
+            'costLog': [costItem.dict]
+            # 'stockLog': False,      # True\False
+            # 'stock': [stock_list]
         }
 
-    def getDict(self):
-        return self.ingredient
+    def validate(self, name, type, unity):
+
+        if name == '':
+            raise ValueError('Nome do ingrediente inválido.')
+
+        if type == '':
+            raise ValueError('Tipo do ingrediente inválido.')
+
+        if unity == '':
+            raise ValueError('Unidade do ingrediente inválido')
 
     def generateBSON(self):
         pass
