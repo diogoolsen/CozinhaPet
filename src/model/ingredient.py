@@ -41,4 +41,3 @@ class Ingredient():
 
         if unity == '':
             raise ValueError('Unidade do ingrediente inválido')
-
