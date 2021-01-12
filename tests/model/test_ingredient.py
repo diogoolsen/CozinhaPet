@@ -11,6 +11,7 @@ class TestIngredient():
     def assert_item_by_item(self, actual, expected, message=''):
 
         assert actual['name'] == expected['name'], message
+        assert actual['searchable'] == expected['searchable'], message
         assert actual['type'] == expected['type'], message
         assert actual['unity'] == expected['unity'], message
 
@@ -60,6 +61,7 @@ class TestIngredient():
 
         expected = {
             'name': 'abobrinha',
+            'searchable': 'ABOBRINHA',
             'type': 'vegetal',
             'unity': 'g',
             'amount': 1000.,
@@ -110,6 +112,7 @@ class TestIngredient():
 
         expected = {
             'name': 'figado bovino',
+            'searchable': 'FIGADO BOVINO',
             'type': 'carne',
             'unity': 'g',
             'amount': 500.,

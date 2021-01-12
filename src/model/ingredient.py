@@ -1,4 +1,6 @@
 
+import unidecode
+
 from src.model.cost_item import CostItem
 from src.model.factors_item import FactorsItem
 
@@ -21,8 +23,11 @@ class Ingredient():
         except ValueError as Error:
             raise Error
 
+        serchableName = unidecode.unidecode(name).upper()
+
         self.dict = {
             'name': name,
+            'searchable': serchableName,
             'type': type,
             'unity': unity,
             'factorsLog': [factorsItem.dict],

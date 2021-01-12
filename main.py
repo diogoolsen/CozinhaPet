@@ -1,59 +1,74 @@
 
 from src.model.ingredient import Ingredient
-from src.data_base.coziinha_pet_DB import CozinhaPetDB
+from src.data_base.cozinha_pet_DB import CozinhaPetDB
 
-
-ingredient = Ingredient('abobrinha',
-                        'vegetal',
-                        'g',
-                        '3.14')
-
-# print(ingredient.dict['name'])
-# print(ingredient.dict)
 
 DB = CozinhaPetDB()
-# DB.addIngredient(ingredient.dict)
 
-item = DB.getIngredientByName('abobrinha')
-print(item)
+ingredient = Ingredient('Abóbora Paulista',
+                        'Vegetal',
+                        'g',
+                        '2',
+                        cookingFactor='0.8',
+                        safetyMargin='1.03')
 
+try:
+    DB.addIngredient(ingredient.dict)
+except ValueError:
+    pass
 
-# name: str,
-# type: str,     # meat, vegetable, supplement
-# unity: str,    # g, ml, undefined (if supplement)
-# price: str,
-# amount: str = '1000',
-# cookingFactor: str = '1.'',
-# safetyMargin: str = '1.'
+cursor = DB.getIngredientsCursorByNameSimilarity('abo')
 
-# class Erro():
-#     def __init__(self):
-#         raise ValueError('class <' + self.__class__.__qualname__ +
-#                          '> - Erro')
-#         return 10
+print('Busca por similaridade:')
+for ingredient in cursor:
+    # print(ingredient)
+    print('-- ' + ingredient.get('name'))
 
+print('\n')
 
-# def cria(a):
-#     try:
-#         a += Erro()
-#     except ValueError as Error:
-#         raise Error
-#         a = 15
-#         print('erro tratado')
+similarityList = DB.getIngredientsNamesListBySimilarity('abo')
+print('Lista de nomes similares:')
+print(similarityList)
 
-#     a += Erro()
+print('\n')
 
-#     print(a)
-#     return a
+id = DB.getIngredient_id('Abobrinha')
+print('Get _id:')
+print(id)
 
+# print('\n')
+# costItem = CostItem(31, 1000)
+# DB.addNewCost(id, costItem)
 
-# try:
-#     x = cria(10)
-# except ValueError as identifier:
-#     print(' -> ', type(identifier))
-#     print(' -> ', identifier)
-#     x = 0
+print('\n')
 
-# print(x)
+cost = DB.getNewestCost1K(id)
+print('Get Newest Cost 1K:')
+print(cost)
 
-# cria(10)
+print('\n')
+
+cost = DB.getNewestCost1Unity(id)
+print('Get Newest Cost 1Unity:')
+print(cost)
+
+# print('\n')
+# DB.addNewFactors(id, 0.90, 1.1)
+
+print('\n')
+
+factor = DB.getNewestCookingFactor(id)
+print('Get Newest Cooking Factor:')
+print(factor)
+
+print('\n')
+
+factor = DB.getNewestSafetyMargin(id)
+print('Get Newest Safety Margin:')
+print(factor)
+
+print('\n')
+
+factor = DB.getNewestActualFactor(id)
+print('Get Newest Actual Factor:')
+print(factor)
