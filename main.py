@@ -9,6 +9,7 @@ ingredient = Ingredient('Abóbora Paulista',
                         'Vegetal',
                         'g',
                         '2',
+                        '2',
                         cookingFactor='0.8',
                         safetyMargin='1.03')
 

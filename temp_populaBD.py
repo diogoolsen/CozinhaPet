@@ -1,15 +1,16 @@
 
 from src.model.ingredient import Ingredient
-from src.data_base.cozinha_pet_DB import CozinhaPetDB
+from src.data_base.ingredients_DB import IngredientsDB
 
 
 def populaDB():
 
-    DB = CozinhaPetDB()
+    DB = IngredientsDB()
 
     ingredient = Ingredient('Abóbora Paulista',
                             'Vegetal',
                             'g',
+                            '2',
                             '2',
                             cookingFactor='0.8',
                             safetyMargin='1.03')
@@ -23,6 +24,7 @@ def populaDB():
                             'Vegetal',
                             'g',
                             '2.79',
+                            '2.79',
                             cookingFactor='0.79',
                             safetyMargin='1.03')
 
@@ -34,6 +36,7 @@ def populaDB():
     ingredient = Ingredient('Arroz integral',
                             'Vegetal',
                             'g',
+                            '5.99',
                             '5.99',
                             cookingFactor='3.2',
                             safetyMargin='1.03')
@@ -47,6 +50,7 @@ def populaDB():
                             'Vegetal',
                             'g',
                             '11',
+                            '11',
                             cookingFactor='1',
                             safetyMargin='1')
 
@@ -58,6 +62,7 @@ def populaDB():
     ingredient = Ingredient('Azeite de oliva extravirgem',
                             'Complemento',
                             'ml',
+                            '42',
                             '42',
                             cookingFactor='1',
                             safetyMargin='1')
@@ -71,6 +76,7 @@ def populaDB():
                             'Vegetal',
                             'g',
                             '2.79',
+                            '2.79',
                             cookingFactor='1.02',
                             safetyMargin='1.03')
 
@@ -82,6 +88,7 @@ def populaDB():
     ingredient = Ingredient('Batata salsa',
                             'Vegetal',
                             'g',
+                            '8',
                             '8',
                             cookingFactor='0.96',
                             safetyMargin='1')
@@ -95,6 +102,7 @@ def populaDB():
                             'Vegetal',
                             'g',
                             '10',
+                            '10',
                             cookingFactor='0.9',
                             safetyMargin='1.03')
 
@@ -106,6 +114,7 @@ def populaDB():
     ingredient = Ingredient('Cenoura',
                             'Vegetal',
                             'g',
+                            '3.99',
                             '3.99',
                             cookingFactor='0.91',
                             safetyMargin='1.03')
@@ -119,6 +128,7 @@ def populaDB():
                             'Vegetal',
                             'g',
                             '3.79',
+                            '3.79',
                             cookingFactor='0.79',
                             safetyMargin='1.03')
 
@@ -130,6 +140,7 @@ def populaDB():
     ingredient = Ingredient('Couve',
                             'Vegetal',
                             'g',
+                            '8.75',
                             '8.75',
                             cookingFactor='0.4',
                             safetyMargin='1.03')
@@ -143,6 +154,7 @@ def populaDB():
                             'Vegetal',
                             'g',
                             '20.96',
+                            '20.96',
                             cookingFactor='0.95',
                             safetyMargin='1.03')
 
@@ -154,6 +166,7 @@ def populaDB():
     ingredient = Ingredient('Farelo de aveia',
                             'Vegetal',
                             'g',
+                            '9',
                             '9',
                             cookingFactor='1',
                             safetyMargin='1')
@@ -167,6 +180,7 @@ def populaDB():
                             'Carne',
                             'g',
                             '15.98',
+                            '15.98',
                             cookingFactor='0.81',
                             safetyMargin='1.04')
 
@@ -178,6 +192,7 @@ def populaDB():
     ingredient = Ingredient('Mignon suíno',
                             'Carne',
                             'g',
+                            '21.9',
                             '21.9',
                             cookingFactor='0.69',
                             safetyMargin='1.04')
@@ -191,6 +206,7 @@ def populaDB():
                             'Carne',
                             'g',
                             '29.9',
+                            '29.9',
                             cookingFactor='0.76',
                             safetyMargin='1.04')
 
@@ -202,6 +218,7 @@ def populaDB():
     ingredient = Ingredient('Óleo de coco',
                             'Complemento',
                             'ml',
+                            '64',
                             '64',
                             cookingFactor='1',
                             safetyMargin='1')
@@ -215,6 +232,7 @@ def populaDB():
                             'Complemento',
                             'ml',
                             '87.6',
+                            '87.6',
                             cookingFactor='1',
                             safetyMargin='1')
 
@@ -226,6 +244,7 @@ def populaDB():
     ingredient = Ingredient('Peito de frango',
                             'Carne',
                             'g',
+                            '14.9',
                             '14.9',
                             cookingFactor='0.79',
                             safetyMargin='1.04')
@@ -239,6 +258,7 @@ def populaDB():
                             'Complemento',
                             'g',
                             '3',
+                            '3',
                             cookingFactor='1',
                             safetyMargin='1')
 
@@ -251,6 +271,7 @@ def populaDB():
                             'Vegetal',
                             'g',
                             '7',
+                            '7',
                             cookingFactor='0.95',
                             safetyMargin='1.03')
 
@@ -262,6 +283,7 @@ def populaDB():
     ingredient = Ingredient('Vagem',
                             'Vegetal',
                             'g',
+                            '6.59',
                             '6.59',
                             cookingFactor='0.86',
                             safetyMargin='1.03')

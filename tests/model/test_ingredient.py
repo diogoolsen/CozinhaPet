@@ -15,6 +15,9 @@ class TestIngredient():
         assert actual['type'] == expected['type'], message
         assert actual['unity'] == expected['unity'], message
 
+        assert actual['establishedCostPer1K'] == \
+            approx(expected['establishedCostPer1K'])
+
         assert isinstance(actual['factorsLog'][0]['date'],
                           datetime.datetime)
         assert actual['factorsLog'][0]['cookingFactor'] ==\
@@ -41,8 +44,9 @@ class TestIngredient():
         type = 'vegetal'
         unity = 'g'
         price = '3.14'
+        established = '3'
 
-        actual = Ingredient(name, type, unity, price).dict
+        actual = Ingredient(name, type, unity, price, established).dict
 
         expected_factors_dict = {
             'date': datetime.datetime.now(),
@@ -64,9 +68,10 @@ class TestIngredient():
             'searchable': 'ABOBRINHA',
             'type': 'vegetal',
             'unity': 'g',
-            'amount': 1000.,
+            # 'amount': 1000.,
             'factorsLog': [expected_factors_dict],
-            'costLog': [expected_cost_dict]
+            'costLog': [expected_cost_dict],
+            'establishedCostPer1K': 3.
         }
 
         message = ('test_create_ingredient_OK_v1 returned'
@@ -83,6 +88,7 @@ class TestIngredient():
         type = 'carne'
         unity = 'g'
         price = '32.5'
+        established = '65'
         amount = '500'
         cookingFactor = '0.75'
         safetyMargin = '1.05'
@@ -91,6 +97,7 @@ class TestIngredient():
                             type,
                             unity,
                             price,
+                            established,
                             amount,
                             cookingFactor,
                             safetyMargin).dict
@@ -115,9 +122,10 @@ class TestIngredient():
             'searchable': 'FIGADO BOVINO',
             'type': 'carne',
             'unity': 'g',
-            'amount': 500.,
+            # 'amount': 500.,
             'factorsLog': [expected_factors_dict],
-            'costLog': [expected_cost_dict]
+            'costLog': [expected_cost_dict],
+            'establishedCostPer1K': 65
         }
 
         message = ('test_create_ingredient_OK_v2 returned'
@@ -134,10 +142,11 @@ class TestIngredient():
         type = 'complemento'
         unity = 'ml'
         price = '32'
+        established = '32'
 
         with raises(ValueError) as exception_info:
             # store the exception
-            Ingredient(name, type, unity, price)
+            Ingredient(name, type, unity, price, established)
 
         # Check if ValueError contains correct message
         assert exception_info.match('Nome do ingrediente inválido.')
@@ -148,10 +157,11 @@ class TestIngredient():
         type = ''
         unity = 'ml'
         price = '32'
+        established = '64'
 
         with raises(ValueError) as exception_info:
             # store the exception
-            Ingredient(name, type, unity, price)
+            Ingredient(name, type, unity, price, established)
 
         # Check if ValueError contains correct message
         assert exception_info.match('Tipo do ingrediente inválido.')
@@ -162,10 +172,11 @@ class TestIngredient():
         type = 'complemento'
         unity = ''
         price = '32'
+        established = '64'
 
         with raises(ValueError) as exception_info:
             # store the exception
-            Ingredient(name, type, unity, price)
+            Ingredient(name, type, unity, price, established)
 
         # Check if ValueError contains correct message
         assert exception_info.match('Unidade do ingrediente inválido')
@@ -176,10 +187,11 @@ class TestIngredient():
         type = 'complemento'
         unity = 'ml'
         price = '32,5'
+        established = '65'
 
         with raises(ValueError) as exception_info:
             # store the exception
-            Ingredient(name, type, unity, price)
+            Ingredient(name, type, unity, price, established)
 
         # Check if ValueError contains correct message
         assert exception_info.match('Custo do ingrediente inválido.')
@@ -190,11 +202,12 @@ class TestIngredient():
         type = 'complemento'
         unity = 'ml'
         price = '32'
+        established = '64'
         amount = '22x'
 
         with raises(ValueError) as exception_info:
             # store the exception
-            Ingredient(name, type, unity, price, amount)
+            Ingredient(name, type, unity, price, established, amount)
 
         # Check if ValueError contains correct message
         assert exception_info.match('Quantidade de ingrediente inválida.')
@@ -205,13 +218,14 @@ class TestIngredient():
         type = 'complemento'
         unity = 'ml'
         price = '32'
+        established = '64'
         amount = '22'
         cookingFactor = '1,2'
         safetyMargin = '1.1'
 
         with raises(ValueError) as exception_info:
             # store the exception
-            Ingredient(name, type, unity, price, amount,
+            Ingredient(name, type, unity, price, established, amount,
                        cookingFactor, safetyMargin)
 
         # Check if ValueError contains correct message
@@ -223,13 +237,14 @@ class TestIngredient():
         type = 'complemento'
         unity = 'ml'
         price = '32'
+        established = '64'
         amount = '22'
         cookingFactor = '1.2'
         safetyMargin = '1,1'
 
         with raises(ValueError) as exception_info:
             # store the exception
-            Ingredient(name, type, unity, price, amount,
+            Ingredient(name, type, unity, price, established, amount,
                        cookingFactor, safetyMargin)
 
         # Check if ValueError contains correct message

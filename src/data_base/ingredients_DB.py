@@ -1,35 +1,18 @@
 
-import re
+# import re
 
-import unidecode
+# import unidecode
 
-from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure
+# from pymongo import MongoClient
+# from pymongo.errors import ConnectionFailure
 
 from src.model.ingredient import Ingredient
 from src.model.cost_item import CostItem
 from src.model.factors_item import FactorsItem
+from src.data_base.cozinha_pet_database import CozinhaPetDataBase
 
 
-class CozinhaPetDB():
-
-    def __init__(self):
-
-        # Client connects to "localhost" by default
-        try:
-            self.client = MongoClient()
-        except ConnectionFailure:
-            raise RuntimeError('Banco de Dados indisponível.')
-
-        # Create local 'CozinhaPetDB' database on the fly
-        # Acessa o banco de dados 'CozinhaPetDB'
-        self.CozinhaPetDB = self.client.CozinhaPetDB
-
-        # Acessa a coleção 'Ingredientes'
-        self.Ingredientes = self.CozinhaPetDB.Ingredientes
-
-    def __del__(self):
-        self.client.close
+class IngredientsDB(CozinhaPetDataBase):
 
     #
     # Manipulate Ingredients
@@ -43,7 +26,8 @@ class CozinhaPetDB():
         else:
             dict = ingredient.dict
 
-        searchableName = unidecode.unidecode(dict['name']).upper()
+        # searchableName = unidecode.unidecode(dict['name']).upper()
+        searchableName = self.getExactSearchableRegex(dict['name'])
 
         if self.Ingredientes.find_one({'searchable': searchableName}):
             raise ValueError('Ingrediente já cadastrado.')
@@ -60,14 +44,16 @@ class CozinhaPetDB():
         return self.Ingredientes.find()
 
     def getIngredientsCursorByNameSimilarity(self, name):
-        regx = re.compile(r'(?i){}'.format(name))
+        # regx = re.compile(r'(?i){}'.format(name))
+        regx = self.getSimilaritySearchableRegex(name)
 
         return self.Ingredientes.find(
                 {'searchable': regx}
             )
 
     def getIngredientsNamesListBySimilarity(self, name):
-        regx = re.compile(r'(?i){}'.format(name))
+        # regx = re.compile(r'(?i){}'.format(name))
+        regx = self.getSimilaritySearchableRegex(name)
 
         ingredientNamesList = self.Ingredientes.find(
             {'searchable': regx},
@@ -77,9 +63,11 @@ class CozinhaPetDB():
         return ingredientNamesList
 
     def getIngredient_id(self, name):
-        regx = re.compile(r'(?i)^{}$'.format(name))
+        # regx = re.compile(r'(?i)^{}$'.format(name))
+        regx = self.getExactSearchableRegex(name)
 
-        ingredient = self.Ingredientes.find_one({'name': regx}, {'_id': 1})
+        ingredient = self.Ingredientes.find_one(
+            {'searchable': regx}, {'_id': 1})
 
         if ingredient is None:
             raise ValueError('Impossível encontrar ingrediente: ' + name)
@@ -193,13 +181,3 @@ class CozinhaPetDB():
             raise err
 
         return ingredientNewestFactorsItem['actualFactor']
-
-    #
-    # Manipulate Stock
-    #
-
-    def updateStock(self, _id, amount, inBulk=True):
-        pass
-
-    def getStockAmount(self, _id):
-        pass

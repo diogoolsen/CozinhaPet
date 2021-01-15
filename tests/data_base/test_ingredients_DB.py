@@ -5,7 +5,7 @@ import datetime
 import pytest
 from pytest import approx, raises
 
-from src.data_base.cozinha_pet_DB import CozinhaPetDB
+from src.data_base.ingredients_DB import IngredientsDB
 from src.model.ingredient import Ingredient
 from src.model.cost_item import CostItem
 from src.model.factors_item import FactorsItem
@@ -18,36 +18,37 @@ class TestIngredient():
     #
 
     @pytest.fixture(scope="class")
-    def CP_DB(self):
-        CP = CozinhaPetDB()
+    def ing_DB(self):
+        CP = IngredientsDB()
 
         yield CP
 
         del(CP)
 
     @pytest.fixture(scope="class")
-    def ingredient_id(self, CP_DB):
+    def ingredient_id(self, ing_DB):
 
         try:
-            CP_DB.getIngredient_id('__teste_v1__')
+            ing_DB.getIngredient_id('__teste_v1__')
         except ValueError:
-            ingredient = Ingredient('__teste_v1__', 'Vegetal', 'g', '3.45')
+            ingredient = Ingredient(
+                '__teste_v1__', 'Vegetal', 'g', '3.45', '3.45')
 
-            CP_DB.addIngredient(ingredient)
+            ing_DB.addIngredient(ingredient)
 
-        _id = CP_DB.getIngredient_id('__teste_v1__')
+        _id = ing_DB.getIngredient_id('__teste_v1__')
 
         yield _id
 
-        CP_DB.removeIngredient(_id)
+        ing_DB.removeIngredient(_id)
 
     #
     # Testing Ingredients
     #
 
-    def test_addIngredient(self, CP_DB, ingredient_id):
+    def test_addIngredient(self, ing_DB, ingredient_id):
 
-        actual = CP_DB.Ingredientes.find_one({'name': '__teste_v1__'})
+        actual = ing_DB.Ingredientes.find_one({'name': '__teste_v1__'})
 
         assert ingredient_id is not None
         assert actual['_id'] == ingredient_id
@@ -56,6 +57,7 @@ class TestIngredient():
         assert actual['searchable'] == '__TESTE_V1__'
         assert actual['type'] == 'Vegetal'
         assert actual['unity'] == 'g'
+        assert actual['establishedCostPer1K'] == approx(3.45)
 
         assert isinstance(actual['factorsLog'][0]['date'],
                           datetime.datetime)
@@ -70,84 +72,84 @@ class TestIngredient():
         assert actual['costLog'][0]['costPer1Unity'] == approx(0.00345)
         assert actual['costLog'][0]['costPer1K'] == 3.45
 
-    def test_addIngredient_duplicated(self, CP_DB, ingredient_id):
+    def test_addIngredient_duplicated(self, ing_DB, ingredient_id):
 
-        ingredient = Ingredient('__teste_v1__', 'Vegetal', 'g', '3.45')
+        ingredient = Ingredient('__teste_v1__', 'Vegetal', 'g', '3.45', '3.45')
 
         with raises(ValueError) as exception_info:
             # store the exception
-            CP_DB.addIngredient(ingredient)
+            ing_DB.addIngredient(ingredient)
 
         # Check if ValueError contains correct message
         assert exception_info.match('Ingrediente já cadastrado.')
 
-    def test_addIngredient_wrong_data(self, CP_DB, ingredient_id):
+    def test_addIngredient_wrong_data(self, ing_DB, ingredient_id):
 
-        ingredient = Ingredient('__teste_v1__', 'Vegetal', 'g', '3.45')
+        ingredient = Ingredient('__teste_v1__', 'Vegetal', 'g', '3.45', '3.45')
 
         with raises(ValueError) as exception_info:
             # store the exception
-            CP_DB.addIngredient(ingredient.dict)
+            ing_DB.addIngredient(ingredient.dict)
 
         # Check if ValueError contains correct message
         assert exception_info.match('Tipo de dado do ingredite inválido.')
 
-    def test_removeIngredient_wrong_id(self, CP_DB, ingredient_id):
+    def test_removeIngredient_wrong_id(self, ing_DB, ingredient_id):
 
         with raises(ValueError) as exception_info:
             # store the exception
-            CP_DB.removeIngredient(12112)
+            ing_DB.removeIngredient(12112)
 
         # Check if ValueError contains correct message
         assert exception_info.match('Não foi possível deletar o documento.')
 
-    def test_removeIngredient(self, CP_DB, ingredient_id):
+    def test_removeIngredient(self, ing_DB, ingredient_id):
 
-        ingredient = Ingredient('__teste_v2__', 'Vegetal', 'g', '3.45')
+        ingredient = Ingredient('__teste_v2__', 'Vegetal', 'g', '3.45', '3.45')
 
         try:
-            CP_DB.addIngredient(ingredient)
+            ing_DB.addIngredient(ingredient)
         except ValueError:
             assert False
 
-        _id_v1 = CP_DB.Ingredientes.find_one({'name': '__teste_v2__'})['_id']
+        _id_v1 = ing_DB.Ingredientes.find_one({'name': '__teste_v2__'})['_id']
 
         try:
-            CP_DB.removeIngredient(_id_v1)
+            ing_DB.removeIngredient(_id_v1)
         except ValueError:
             assert False
 
-        _id_v2 = CP_DB.Ingredientes.find_one({'name': '__teste_v2__'})
+        _id_v2 = ing_DB.Ingredientes.find_one({'name': '__teste_v2__'})
 
         assert _id_v1 is not None
         assert _id_v2 is None
 
-    def test_getIngredientsCursorByNameSimilarity(self, CP_DB):
-        cursor = CP_DB.getIngredientsCursorByNameSimilarity('este_v')
+    def test_getIngredientsCursorByNameSimilarity(self, ing_DB):
+        cursor = ing_DB.getIngredientsCursorByNameSimilarity('este_v')
 
         for item in cursor:
             assert item['name'] == '__teste_v1__'
 
-    def test_getIngredientsNamesListBySimilarity(self, CP_DB):
-        names_list = CP_DB.getIngredientsNamesListBySimilarity('este_v')
+    def test_getIngredientsNamesListBySimilarity(self, ing_DB):
+        names_list = ing_DB.getIngredientsNamesListBySimilarity('este_v')
 
         assert names_list == ['__teste_v1__']
 
-    def test_getIngredient_id_not_found(self, CP_DB):
+    def test_getIngredient_id_not_found(self, ing_DB):
         with raises(ValueError) as exception_info:
             # store the exception
-            CP_DB.getIngredient_id('12112')
+            ing_DB.getIngredient_id('12112')
 
         # Check if ValueError contains correct message
         assert exception_info.match('Impossível encontrar ingrediente: 12112')
 
-    def test_getIngredient_id(self, CP_DB):
+    def test_getIngredient_id(self, ing_DB):
         try:
-            _id_v1 = CP_DB.getIngredient_id('__teste_v1__')
+            _id_v1 = ing_DB.getIngredient_id('__teste_v1__')
         except ValueError:
             assert False
 
-        _id_v2 = CP_DB.Ingredientes.find_one(
+        _id_v2 = ing_DB.Ingredientes.find_one(
             {'name': '__teste_v1__'}).get('_id')
 
         assert _id_v1 == _id_v2
@@ -156,11 +158,11 @@ class TestIngredient():
     # Testing Costs
     #
 
-    def test_addNewCost(self, CP_DB, ingredient_id):
+    def test_addNewCost(self, ing_DB, ingredient_id):
         costItem = CostItem(50, 500)
 
         try:
-            CP_DB.addNewCost(ingredient_id, costItem)
+            ing_DB.addNewCost(ingredient_id, costItem)
         except RuntimeError as err:
             print(err)
             assert False
@@ -169,7 +171,7 @@ class TestIngredient():
             assert False
 
         try:
-            newestCost = CP_DB.getNewestCost(ingredient_id)
+            newestCost = ing_DB.getNewestCost(ingredient_id)
         except ValueError as err:
             print(err)
             assert False
@@ -179,29 +181,29 @@ class TestIngredient():
         assert newestCost['costPer1K'] == approx(100)
         assert newestCost['costPer1Unity'] == approx(0.1)
 
-    def test_addNewCost_wrong_id(self, CP_DB, ingredient_id):
+    def test_addNewCost_wrong_id(self, ing_DB, ingredient_id):
         costItem = CostItem(40, 400)
 
         with raises(RuntimeError) as exception_info:
             # store the exception
-            CP_DB.addNewCost(122112, costItem)
+            ing_DB.addNewCost(122112, costItem)
 
         # Check if RuntimeError contains correct message
         assert exception_info.match('Custo não atualizado')
 
-    def test_addNewCost_wrong_data(self, CP_DB, ingredient_id):
+    def test_addNewCost_wrong_data(self, ing_DB, ingredient_id):
         with raises(ValueError) as exception_info:
             # store the exception
-            CP_DB.addNewCost(ingredient_id, (50, 500))
+            ing_DB.addNewCost(ingredient_id, (50, 500))
 
         # Check if ValueError contains correct message
         assert exception_info.match('Tipo de dado do custo inválido.')
 
-    def test_getNewCost(self, CP_DB, ingredient_id):
+    def test_getNewCost(self, ing_DB, ingredient_id):
         costItem = CostItem(55, 550)
 
         try:
-            CP_DB.addNewCost(ingredient_id, costItem)
+            ing_DB.addNewCost(ingredient_id, costItem)
         except RuntimeError as err:
             print(err)
             assert False
@@ -210,9 +212,9 @@ class TestIngredient():
             assert False
 
         try:
-            newestCost = CP_DB.getNewestCost(ingredient_id)
-            newestCost1K = CP_DB.getNewestCost1K(ingredient_id)
-            newestCost1Unity = CP_DB.getNewestCost1Unity(ingredient_id)
+            newestCost = ing_DB.getNewestCost(ingredient_id)
+            newestCost1K = ing_DB.getNewestCost1K(ingredient_id)
+            newestCost1Unity = ing_DB.getNewestCost1Unity(ingredient_id)
         except ValueError as err:
             print(err)
             assert False
@@ -225,24 +227,24 @@ class TestIngredient():
         assert newestCost['costPer1Unity'] == approx(0.1)
         assert isinstance(newestCost['date'], datetime.datetime)
 
-    def test_getNewCost_wrong_id(self, CP_DB):
+    def test_getNewCost_wrong_id(self, ing_DB):
         with raises(ValueError) as exception_info:
             # store the exception
-            CP_DB.getNewestCost(12342134)
+            ing_DB.getNewestCost(12342134)
 
         # Check if ValueError contains correct message
         assert exception_info.match('Pesquisa de custo mais recente falhou.')
 
         with raises(ValueError) as exception_info:
             # store the exception
-            CP_DB.getNewestCost1K(12341321432)
+            ing_DB.getNewestCost1K(12341321432)
 
         # Check if ValueError contains correct message
         assert exception_info.match('Pesquisa de custo mais recente falhou.')
 
         with raises(ValueError) as exception_info:
             # store the exception
-            CP_DB.getNewestCost1Unity(141233421321243)
+            ing_DB.getNewestCost1Unity(141233421321243)
 
         # Check if ValueError contains correct message
         assert exception_info.match('Pesquisa de custo mais recente falhou.')
@@ -251,11 +253,11 @@ class TestIngredient():
     # Testing Factors
     #
 
-    def test_addNewFactors(self, CP_DB, ingredient_id):
+    def test_addNewFactors(self, ing_DB, ingredient_id):
         factorsItem = FactorsItem(0.5, 2)
 
         try:
-            CP_DB.addNewFactors(ingredient_id, factorsItem)
+            ing_DB.addNewFactors(ingredient_id, factorsItem)
         except RuntimeError as err:
             print(err)
             assert False
@@ -264,7 +266,7 @@ class TestIngredient():
             assert False
 
         try:
-            newestFactors = CP_DB.getNewestFactors(ingredient_id)
+            newestFactors = ing_DB.getNewestFactors(ingredient_id)
         except ValueError as err:
             print(err)
             assert False
@@ -273,29 +275,29 @@ class TestIngredient():
         assert newestFactors['safetyMargin'] == approx(2)
         assert newestFactors['actualFactor'] == approx(1)
 
-    def test_addNewFactors_wrong_id(self, CP_DB, ingredient_id):
+    def test_addNewFactors_wrong_id(self, ing_DB, ingredient_id):
         factorsItem = FactorsItem(0.5, 2)
 
         with raises(RuntimeError) as exception_info:
             # store the exception
-            CP_DB.addNewFactors(122112, factorsItem)
+            ing_DB.addNewFactors(122112, factorsItem)
 
         # Check if RuntimeError contains correct message
         assert exception_info.match('Fatores não atualizados')
 
-    def test_addNewFactors_wrong_data(self, CP_DB, ingredient_id):
+    def test_addNewFactors_wrong_data(self, ing_DB, ingredient_id):
         with raises(ValueError) as exception_info:
             # store the exception
-            CP_DB.addNewFactors(ingredient_id, (50, 500))
+            ing_DB.addNewFactors(ingredient_id, (50, 500))
 
         # Check if ValueError contains correct message
         assert exception_info.match('Tipo de dado dos fatores é inválido.')
 
-    def test_getNewFactors(self, CP_DB, ingredient_id):
+    def test_getNewFactors(self, ing_DB, ingredient_id):
         factorsItem = FactorsItem(0.75, 1.1)
 
         try:
-            CP_DB.addNewFactors(ingredient_id, factorsItem)
+            ing_DB.addNewFactors(ingredient_id, factorsItem)
         except RuntimeError as err:
             print(err)
             assert False
@@ -304,10 +306,10 @@ class TestIngredient():
             assert False
 
         try:
-            newestFactors = CP_DB.getNewestFactors(ingredient_id)
-            newestFactorsCooking = CP_DB.getNewestCookingFactor(ingredient_id)
-            newestFactorsSafety = CP_DB.getNewestSafetyMargin(ingredient_id)
-            newestFactorsActual = CP_DB.getNewestActualFactor(ingredient_id)
+            newestFactors = ing_DB.getNewestFactors(ingredient_id)
+            newestFactorsCooking = ing_DB.getNewestCookingFactor(ingredient_id)
+            newestFactorsSafety = ing_DB.getNewestSafetyMargin(ingredient_id)
+            newestFactorsActual = ing_DB.getNewestActualFactor(ingredient_id)
         except ValueError as err:
             print(err)
             assert False
@@ -320,10 +322,10 @@ class TestIngredient():
         assert newestFactors['actualFactor'] == approx(0.825)
         assert isinstance(newestFactors['date'], datetime.datetime)
 
-    def test_getNewFactors_wrong_id(self, CP_DB):
+    def test_getNewFactors_wrong_id(self, ing_DB):
         with raises(ValueError) as exception_info:
             # store the exception
-            CP_DB.getNewestFactors(12342134)
+            ing_DB.getNewestFactors(12342134)
 
         # Check if ValueError contains correct message
         assert exception_info.match(
@@ -331,7 +333,7 @@ class TestIngredient():
 
         with raises(ValueError) as exception_info:
             # store the exception
-            CP_DB.getNewestCookingFactor(12341321432)
+            ing_DB.getNewestCookingFactor(12341321432)
 
         # Check if ValueError contains correct message
         assert exception_info.match(
@@ -339,7 +341,7 @@ class TestIngredient():
 
         with raises(ValueError) as exception_info:
             # store the exception
-            CP_DB.getNewestSafetyMargin(141233421321243)
+            ing_DB.getNewestSafetyMargin(141233421321243)
 
         # Check if ValueError contains correct message
         assert exception_info.match(
@@ -347,7 +349,7 @@ class TestIngredient():
 
         with raises(ValueError) as exception_info:
             # store the exception
-            CP_DB.getNewestActualFactor(141233421321243)
+            ing_DB.getNewestActualFactor(141233421321243)
 
         # Check if ValueError contains correct message
         assert exception_info.match(

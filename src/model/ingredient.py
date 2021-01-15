@@ -11,6 +11,7 @@ class Ingredient():
                  type: str,     # meat, vegetable, supplement
                  unity: str,    # g, ml, undefined (if supplement)
                  price: str,
+                 established: str,
                  amount: str = '1000',
                  cookingFactor: str = '1.',
                  safetyMargin: str = '1.') -> None:
@@ -31,7 +32,8 @@ class Ingredient():
             'type': type,
             'unity': unity,
             'factorsLog': [factorsItem.dict],
-            'costLog': [costItem.dict]
+            'costLog': [costItem.dict],
+            'establishedCostPer1K': float(established)
             # 'stockLog': False,      # True\False
             # 'stock': [stock_list]
         }
