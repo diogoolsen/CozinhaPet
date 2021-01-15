@@ -60,7 +60,7 @@ class RecipesDB(CozinhaPetDataBase):
                     {'searchable': regx},
                     {'_id': 0, 'name': 1}
                 ).distinct('name')
-        
+
         return recipesList
 
         # ingredient = self.Ingredientes.find_one({'name': regx}, {'_id': 1})

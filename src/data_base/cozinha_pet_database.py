@@ -41,8 +41,10 @@ class CozinhaPetDataBase():
 
     def getExactSearchableRegex(self, term):
         # Remove caracteres estranhos
-        return unidecode.unidecode(term).upper()
+        searchable = unidecode.unidecode(term).upper()
         # Gera a expressão regular que inicie com o termo (^)
         # e finalize com o termo ($) - ou seja, só contém o termo
         # ignorandomaiusculas e minusculas
-        regx = re.compile(r'(?i)^{}$'.format(name))
+        regx = re.compile(r'(?i)^{}$'.format(searchable))
+
+        return regx
