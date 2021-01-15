@@ -1,9 +1,9 @@
 
 from src.model.ingredient import Ingredient
-from src.data_base.cozinha_pet_DB import CozinhaPetDB
+from src.data_base.ingredients_DB import IngredientsDB
 
 
-DB = CozinhaPetDB()
+DB = IngredientsDB()
 
 ingredient = Ingredient('Abóbora Paulista',
                         'Vegetal',
