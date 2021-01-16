@@ -1,5 +1,4 @@
 
-# import pytest
 import datetime
 
 import pytest
@@ -11,7 +10,7 @@ from src.model.cost_item import CostItem
 from src.model.factors_item import FactorsItem
 
 
-class TestIngredient():
+class TestIngredientsDB():
 
     #
     # Scenarios for Testing

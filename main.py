@@ -1,6 +1,8 @@
 
 from src.model.ingredient import Ingredient
+from src.model.recipe import Recipe
 from src.data_base.ingredients_DB import IngredientsDB
+from src.data_base.recipes_DB import RecipesDB
 
 
 DB = IngredientsDB()
@@ -73,3 +75,26 @@ print('\n')
 factor = DB.getNewestActualFactor(id)
 print('Get Newest Actual Factor:')
 print(factor)
+
+
+#
+# Trabalhando com receitas
+#
+
+recipesDB = RecipesDB()
+
+# recipe = Recipe('Bruce', 'Marcela', 'Kássia', 'Bruce - Carne com Arroz')
+
+# recipesDB.addRecipe(recipe)
+
+cursor = recipesDB.getRecipeCursorByTermSimilarity('Ozzy tat')
+
+print('\n')
+
+print('Recipes:')
+for recipe_item in cursor:
+    print('\t' + recipe_item.get('petName') +
+          ' - ' + recipe_item.get('tutorName') +
+          ' - ' + recipe_item.get('recipeName'))
+
+# print(recipesDB.getAndIncrementRecipesCount())

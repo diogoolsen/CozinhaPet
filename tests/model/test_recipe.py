@@ -36,7 +36,7 @@ class TestRecipe():
             'nutricionistSeachable': 'KACIA MENOLLI',
             'recipeName': 'Frango e Bacon',
             'recipeNameSearchable': 'FRANGO E BACON',
-            # 'registrationNumber': '1',
+            # 'registrationNumber': 1,
             'date': datetime.datetime.now(),
             'ingredientsRecipeList': []
         }
@@ -59,7 +59,7 @@ class TestRecipe():
             'nutricionistSeachable': 'LUCIANA PEREIRA',
             'recipeName': 'Arroz Com Carne Moída',
             'recipeNameSearchable': 'ARROZ COM CARNE MOIDA',
-            # 'registrationNumber': '1',
+            # 'registrationNumber': 1,
             'date': datetime.datetime.now(),
             'ingredientsRecipeList': []
         }

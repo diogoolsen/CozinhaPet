@@ -25,7 +25,7 @@ class Recipe():
             'nutricionistSeachable': unidecode.unidecode(nutricionist).upper(),
             'recipeName': recipeName,
             'recipeNameSearchable': unidecode.unidecode(recipeName).upper(),
-            # 'registrationNumber': '1',
+            'registrationNumber': -1,
             'date': datetime.datetime.now(),
             'ingredientsRecipeList': []
         }
