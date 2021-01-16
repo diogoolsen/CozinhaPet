@@ -57,9 +57,9 @@ class RecipesDB(CozinhaPetDataBase):
 
             dict['registrationNumber'] = recipesAccumulator
 
-        self.Recipes.insert_one(dict)
+        _id = self.Recipes.insert_one(dict)
 
-        return recipesAccumulator
+        return (_id.inserted_id, recipesAccumulator)
 
     def getRecipe_id(self, registrationNumber):
         cursor = self.Recipes.find(
@@ -72,20 +72,31 @@ class RecipesDB(CozinhaPetDataBase):
         id_list = list(cursor)
         if len(id_list) == 0:
             raise ValueError(
-                'Impossível encontrar receita: ' + registrationNumber)
+                'Impossível encontrar receita: ' + str(registrationNumber))
         elif len(id_list) > 1:
             raise RuntimeError(
-                'Integridade do registrationNumber comprometida.')
+                'Integridade do registrationNumber comprometida - '
+                'registrationNumber: ' + str(registrationNumber))
 
         return id_list[0]['_id']
 
     def getRecipeByRegistrationNumber(self, registrationNumber):
-        _id = self.getRecipe_id(registrationNumber)
+        try:
+            _id = self.getRecipe_id(registrationNumber)
+        except ValueError as err:
+            raise err
+        except RuntimeError as err:
+            raise err
 
         return self.Recipes.find_one({'_id': _id})
 
     def getRecipeBy_id(self, _id):
-        return self.Recipes.find_one({'_id': _id})
+        recipe = self.Recipes.find_one({'_id': _id})
+
+        if recipe is None:
+            raise ValueError('Impossível encontrar receita _id: ' + str(_id))
+
+        return recipe
 
     def getRecipeCursorByTermSimilarity(self, term):
         # Gera uma lista de palavras para procurar todos os termos
@@ -108,7 +119,8 @@ class RecipesDB(CozinhaPetDataBase):
     def removeRecipe(self, _id):
         result = self.Recipes.delete_one({'_id': _id})
         if result.deleted_count == 0:
-            raise ValueError('Não foi possível deletar o documento.')
+            raise ValueError(
+                'Não foi possível deletar o documento _id: ' + str(_id))
 
     # def getAllIngredientsCursor(self):
     #     return self.Ingredientes.find()

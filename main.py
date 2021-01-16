@@ -1,6 +1,5 @@
 
 from src.model.ingredient import Ingredient
-from src.model.recipe import Recipe
 from src.data_base.ingredients_DB import IngredientsDB
 from src.data_base.recipes_DB import RecipesDB
 
