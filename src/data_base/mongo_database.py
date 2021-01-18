@@ -7,7 +7,7 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
 
-class CozinhaPetDataBase():
+class MongoDataBase():
 
     def __init__(self):
 

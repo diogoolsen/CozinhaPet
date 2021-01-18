@@ -9,10 +9,10 @@
 from src.model.ingredient import Ingredient
 from src.model.cost_item import CostItem
 from src.model.factors_item import FactorsItem
-from src.data_base.cozinha_pet_database import CozinhaPetDataBase
+from src.data_base.mongo_database import MongoDataBase
 
 
-class IngredientsDB(CozinhaPetDataBase):
+class IngredientsDB(MongoDataBase):
 
     #
     # Manipulate Ingredients
@@ -73,6 +73,15 @@ class IngredientsDB(CozinhaPetDataBase):
             raise ValueError('Impossível encontrar ingrediente: ' + name)
 
         return ingredient.get('_id')
+
+    def getIngredientBy_id(self, _id):
+
+        ingredient = self.Ingredientes.find_one({'_id': _id})
+
+        if ingredient is None:
+            raise ValueError('Impossível encontrar ingrediente: ' + str(_id))
+
+        return ingredient
 
     #
     # Manipulate Costs

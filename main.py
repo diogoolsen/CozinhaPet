@@ -2,6 +2,7 @@
 from src.model.ingredient import Ingredient
 from src.data_base.ingredients_DB import IngredientsDB
 from src.data_base.recipes_DB import RecipesDB
+from src.data_base.cozinha_pet_DB import CozinhaPetDB
 
 
 DB = IngredientsDB()
@@ -97,3 +98,11 @@ for recipe_item in cursor:
           ' - ' + recipe_item.get('recipeName'))
 
 # print(recipesDB.getAndIncrementRecipesCount())
+
+
+CZ = CozinhaPetDB()
+
+ing_id = DB.getIngredient_id('Abobrinha')
+rec_id = recipesDB.getRecipe_id(5)
+amount = 0.3
+CZ.addIngredientToRecipe(rec_id, (ing_id, amount))

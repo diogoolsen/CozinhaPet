@@ -41,6 +41,35 @@ class TestIngredientsDB():
 
         ing_DB.removeIngredient(_id)
 
+    def assterIngredients(self, actual, expected):
+
+        assert actual['name'] == expected['name']
+        assert actual['searchable'] == expected['searchable']
+        assert actual['type'] == expected['type']
+        assert actual['unity'] == expected['unity']
+        assert actual['establishedCostPer1K'] ==\
+            expected['establishedCostPer1K']
+
+        assert isinstance(actual['factorsLog'][0]['date'],
+                          datetime.datetime)
+        assert actual['factorsLog'][0]['cookingFactor'] ==\
+            expected['factorsLog'][0]['cookingFactor']
+        assert actual['factorsLog'][0]['safetyMargin'] ==\
+            expected['factorsLog'][0]['safetyMargin']
+        assert actual['factorsLog'][0]['actualFactor'] ==\
+            expected['factorsLog'][0]['actualFactor']
+
+        assert isinstance(actual['costLog'][0]['date'],
+                          datetime.datetime)
+        assert actual['costLog'][0]['price'] ==\
+            expected['costLog'][0]['price']
+        assert actual['costLog'][0]['amount'] ==\
+            expected['costLog'][0]['amount']
+        assert actual['costLog'][0]['costPer1Unity'] ==\
+            expected['costLog'][0]['costPer1Unity']
+        assert actual['costLog'][0]['costPer1K'] ==\
+            expected['costLog'][0]['costPer1K']
+
     #
     # Testing Ingredients
     #
@@ -152,6 +181,29 @@ class TestIngredientsDB():
             {'name': '__teste_v1__'}).get('_id')
 
         assert _id_v1 == _id_v2
+
+    def test_getIngredientBy_id_OK(self, ing_DB, ingredient_id):
+        actual = ing_DB.getIngredientBy_id(ingredient_id)
+
+        expected = Ingredient('__teste_v1__',
+                              'Vegetal',
+                              'g',
+                              '3.45',
+                              '3.45')
+
+        self.assterIngredients(actual, expected.dict)
+
+    def test_getIngredientBy_Bad_id(self, ing_DB):
+
+        bad_id = -2
+
+        with raises(ValueError) as exception_info:
+            # store the exception
+            ing_DB.getIngredientBy_id(bad_id)
+
+        # Check if ValueError contains correct message
+        assert exception_info.match('Impossível encontrar ingrediente: '
+                                    + str(bad_id))
 
     #
     # Testing Costs

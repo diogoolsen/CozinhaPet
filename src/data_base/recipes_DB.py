@@ -2,10 +2,10 @@
 from pymongo.collection import ReturnDocument
 
 from src.model.recipe import Recipe
-from src.data_base.cozinha_pet_database import CozinhaPetDataBase
+from src.data_base.mongo_database import MongoDataBase
 
 
-class RecipesDB(CozinhaPetDataBase):
+class RecipesDB(MongoDataBase):
 
     #
     # Manipulate Recipes Number
