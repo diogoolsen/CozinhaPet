@@ -98,7 +98,7 @@ class RecipesDB(MongoDataBase):
 
         return recipe
 
-    def getRecipeCursorByTermSimilarity(self, term):
+    def getRecipeCursorByTermSimilarity(self, term: str):
         # Gera uma lista de palavras para procurar todos os termos
         searchableTermsList = [self.getSimilaritySearchableRegex(item)
                                for item in term.split()]
