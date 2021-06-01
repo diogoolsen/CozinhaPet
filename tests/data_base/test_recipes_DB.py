@@ -7,7 +7,8 @@ from pytest import raises  # approx
 from pymongo.collection import ReturnDocument
 
 from src.data_base.recipes_DB import RecipesDB
-from src.model.recipe import Recipe
+from src.data_base.ingredients_DB import IngredientsDB
+from src.model import Recipe, IngredientInRecipe
 
 
 class TestRecipesDB():
@@ -27,32 +28,129 @@ class TestRecipesDB():
     @pytest.fixture(scope="class")
     def recipe_id(self, recipes_DB):
 
-        recipe = Recipe('__pet__1',
+        recipe = Recipe('__pet__1__',
                         '__tutor__',
                         '__nutricionist__',
                         '__recipe_name__')
 
-        registrationNumber = recipes_DB.addRecipe(recipe)
+        _id, registrationNumber = recipes_DB.addRecipe(recipe)
 
         _id = recipes_DB.getRecipe_id(registrationNumber)
 
-        yield ({'_id': _id, 'registrationNumber': registrationNumber})
+        yield (_id, registrationNumber)
 
         recipes_DB.removeRecipe(_id)
+
+    @pytest.fixture(scope="class")
+    def recipe_with_ingredients(self, recipes_DB):
+
+        recipe = Recipe('__pet__2__',
+                        '__tutor__',
+                        '__nutricionist__',
+                        '__recipe_name__')
+
+        recipe_id, registrationNumber = recipes_DB.addRecipe(recipe)
+
+        quantidade = 3
+
+        ingr_DB = IngredientsDB()
+
+        #
+        # Pegar IDs de Ingredientes
+        #
+
+        ingredients_idsList = list(
+            ingr_DB.Ingredients.find({}, {'_id': 1}).limit(quantidade))
+
+        for ingredient_id in ingredients_idsList:
+
+            #
+            # Gera os objetos IngredientInRecipe
+            #
+
+            ingredient = ingr_DB.getIngredientBy_id(ingredient_id['_id'])
+            newestFactors = ingr_DB.getNewestActualFactor(
+                ingredient_id['_id'])
+
+            ingredientInRecipe = IngredientInRecipe(
+                ingredient, newestFactors, 0.35)
+
+            #
+            # Insere os ingredientes na receita de teste
+            #
+
+            recipes_DB.addIngredientToRecipe(recipe_id, ingredientInRecipe)
+
+        if len(recipes_DB.getIngredientsListFromRecipe(recipe_id))\
+                != quantidade:
+            assert False
+
+        yield (ingredients_idsList, recipe_id)
+
+        recipes_DB.removeRecipe(recipe_id)
+
+    @pytest.fixture(scope="class")
+    def ingredientInRecipe(self):
+        # Pegar IDs de um Ingrediente
+        ingr_DB = IngredientsDB()
+
+        ingredient_id = ingr_DB.Ingredients.find_one({}, {'_id': 1})
+
+        # Gera os objetos IngredientInRecipe
+        ingredient = ingr_DB.getIngredientBy_id(ingredient_id['_id'])
+        newestFactors = ingr_DB.getNewestActualFactor(
+            ingredient_id['_id'])
+
+        ingredientInRecipe = IngredientInRecipe(
+            ingredient, newestFactors, 0.35)
+
+        yield ingredientInRecipe
+
+        del(ingredientInRecipe)
+
+    #
+    # test Recipes Number
+    #
 
     def test_getAndIncrementRecipesCount(self, recipes_DB):
         previous = recipes_DB.Recipes.find_one(
             {'recipesAccumulator': {'$exists': True}}
-            ).get('recipesAccumulator')
+        ).get('recipesAccumulator')
 
         new = recipes_DB.getAndIncrementRecipesAccumulator()
 
         check = recipes_DB.Recipes.find_one(
             {'recipesAccumulator': {'$exists': True}}
-            ).get('recipesAccumulator')
+        ).get('recipesAccumulator')
 
         assert previous + 1 == new
         assert new == check
+
+    #
+    # isRecipeInDB
+    #
+
+    def test_isRecipeInDB_OK(self, recipes_DB, recipe_with_ingredients):
+
+        ingredients_idsList, recipe_id = recipe_with_ingredients
+
+        result = recipes_DB.isRecipeInDB(recipe_id)
+
+        if not result:
+            assert False
+
+    def test_isRecipeInDB_bad_recipe_id(self, recipes_DB):
+
+        wrong_id = -2
+        with raises(ValueError) as exception_info:
+            recipes_DB.isRecipeInDB(wrong_id)
+
+        assert exception_info.match(
+            'Impossível encontrar receita _id: ' + str(wrong_id))
+
+    #
+    # addRecipe
+    #
 
     def test_addRecipe_OK(self, recipes_DB):
         recipe_1 = Recipe('__pet__2',
@@ -130,6 +228,10 @@ class TestRecipesDB():
         )['recipesAccumulator']
 
         assert check + 1 == incremented
+
+    #
+    # getRecipe_id
+    #
 
     def test_getRecipe_id_Bad_RegistrationNumber(self, recipes_DB):
 
@@ -264,9 +366,9 @@ class TestRecipesDB():
         bad_id = -2
 
         with raises(ValueError) as exception_info:
-            recipes_DB.getRecipeByRegistrationNumber(bad_id)
+            recipes_DB.getRecipeBy_id(bad_id)
 
-        assert exception_info.match('Impossível encontrar receita: '
+        assert exception_info.match('Impossível encontrar receita _id: '
                                     + str(bad_id))
 
     def test_getRecipeCursorByTermSimilarity_OK(self, recipes_DB):
@@ -328,3 +430,265 @@ class TestRecipesDB():
 
         assert exception_info.match(
             'Não foi possível deletar o documento _id: ' + str(bad_id))
+
+    # #
+    # # findIngredientInRecipe
+    # #
+
+    # # @pytest.mark.skip(reason="no way of currently testing this")
+    # def test_findIngredientInRecipe_OK(self,
+    #                                    recipes_DB,
+    #                                    recipe_with_ingredients):
+
+    #     ingredients_idsList, recipe_id = recipe_with_ingredients
+
+    #     ingredient = recipes_DB.findIngredientInRecipe(
+    #         recipe_id,
+    #         ingredients_idsList[0]['_id'])
+
+    #     assert False, str(ingredient)
+
+    # @pytest.mark.skip(reason="no way of currently testing this")
+    # def test_findIngredientInRecipe_bad_recipe_id(self, recipes_DB):
+    #     assert False
+
+    # @pytest.mark.skip(reason="no way of currently testing this")
+    # def test_findIngredientInRecipe_bad_ingredient_id(self, recipes_DB):
+    #     assert False
+
+    #
+    # isIngredientInRecipe
+    #
+
+    # @pytest.mark.skip(reason="no way of currently testing this")
+    def test_isIngredientInRecipe_OK_true(self,
+                                          recipes_DB,
+                                          recipe_with_ingredients):
+
+        ingredients_idsList, recipe_id = recipe_with_ingredients
+
+        if recipes_DB.isIngredientInRecipe(recipe_id,
+                                           ingredients_idsList[0]['_id']):
+            assert True
+        else:
+            assert False
+
+    # @pytest.mark.skip(reason="no way of currently testing this")
+    def test_isIngredientInRecipe_OK_false(self,
+                                           recipes_DB,
+                                           recipe_with_ingredients):
+
+        ingredients_idsList, recipe_id = recipe_with_ingredients
+
+        if not recipes_DB.isIngredientInRecipe(recipe_id, -2):
+            assert True
+        else:
+            assert False
+
+    # @pytest.mark.skip(reason="no way of currently testing this")
+    def test_isIngredientInRecipe_bad_recipe_id(self,
+                                                recipes_DB,
+                                                recipe_with_ingredients):
+
+        ingredients_idsList, recipe_id = recipe_with_ingredients
+
+        if not recipes_DB.isIngredientInRecipe(-2,
+                                               ingredients_idsList[0]['_id']):
+            assert True
+        else:
+            assert False
+
+    #
+    # addIngredientToRecipe
+    #
+
+    # @pytest.mark.skip(reason="no way of currently testing this")
+    def test_addIngredientToRecipe_OK(self, recipes_DB, ingredientInRecipe):
+
+        recipe = Recipe('__pet__13',
+                        '__tutor__',
+                        '__nutricionist__',
+                        '__recipe_name__')
+
+        recipe_id, registrationNumber = recipes_DB.addRecipe(recipe)
+
+        # Insere o ingrediente na receita de teste
+        recipes_DB.addIngredientToRecipe(recipe_id, ingredientInRecipe)
+
+        if len(recipes_DB.getIngredientsListFromRecipe(recipe_id)) != 1:
+            assert False
+
+        recipes_DB.removeRecipe(recipe_id)
+
+    # @pytest.mark.skip(reason="no way of currently testing this")
+    def test_addIngredientToRecipe_ingredisnte_alredy_in_recipe(
+                self, recipes_DB, ingredientInRecipe):
+
+        recipe = Recipe('__pet__14',
+                        '__tutor__',
+                        '__nutricionist__',
+                        '__recipe_name__')
+
+        recipe_id, registrationNumber = recipes_DB.addRecipe(recipe)
+
+        # Insere o ingrediente na receita de teste
+        recipes_DB.addIngredientToRecipe(recipe_id, ingredientInRecipe)
+
+        if len(recipes_DB.getIngredientsListFromRecipe(recipe_id)) != 1:
+            assert False
+
+        with raises(ValueError) as exception_info:
+            # REinsere o ingrediente na receita de teste
+            recipes_DB.addIngredientToRecipe(recipe_id, ingredientInRecipe)
+
+        assert exception_info.match(
+            'Ingrediente já inserido na receita - '
+            'Atualize seu valor.')
+
+        recipes_DB.removeRecipe(recipe_id)
+
+    # @pytest.mark.skip(reason="no way of currently testing this")
+    def test_addIngredientToRecipe_bad_recipe_id(self,
+                                                 recipes_DB,
+                                                 ingredientInRecipe):
+        wrong_id = -2
+
+        with raises(ValueError) as exception_info:
+            # REinsere o ingrediente na receita de teste
+            recipes_DB.addIngredientToRecipe(wrong_id, ingredientInRecipe)
+
+        assert exception_info.match(
+            'Impossível encontrar receita _id: ' + str(wrong_id))
+
+    # @pytest.mark.skip(reason="no way of currently testing this")
+    def test_addIngredientToRecipe_bad_ingredient(self,
+                                                  recipes_DB,
+                                                  recipe_id):
+        _id, registrationNumber = recipe_id
+        with raises(ValueError) as exception_info:
+            # REinsere o ingrediente na receita de teste
+            recipes_DB.addIngredientToRecipe(_id, 'wrong_id')
+
+        assert exception_info.match(
+            'Tipo de dado do ingrediente da receita inválido.')
+
+    #
+    # remIngredientFromRecipe
+    #
+
+    # @pytest.mark.skip(reason="no way of currently testing this")
+    def test_remIngredientFromRecipe_OK(self,
+                                        recipes_DB,
+                                        recipe_with_ingredients):
+
+        ingredients_idsList, recipe_id = recipe_with_ingredients
+
+        firstList = recipes_DB.getIngredientsListFromRecipe(recipe_id)
+
+        recipes_DB.remIngredientFromRecipe(recipe_id,
+                                           ingredients_idsList[0]['_id'])
+
+        lastList = recipes_DB.getIngredientsListFromRecipe(recipe_id)
+
+        if len(firstList) != len(lastList) + 1:
+            assert False
+
+    # @pytest.mark.skip(reason="no way of currently testing this")
+    def test_remIngredientFromRecipe_bad_recipe_id(self,
+                                                   recipes_DB,
+                                                   ingredientInRecipe):
+        wrong_id = -2
+
+        with raises(ValueError) as exception_info:
+            # REinsere o ingrediente na receita de teste
+            recipes_DB.remIngredientFromRecipe(wrong_id, ingredientInRecipe)
+
+        assert exception_info.match(
+            'Impossível encontrar receita _id: ' + str(wrong_id))
+
+    # @pytest.mark.skip(reason="no way of currently testing this")
+    def test_remIngredientFromRecipe_bad_ingredient_id(self,
+                                                       recipes_DB,
+                                                       recipe_id):
+        _id, registrationNumber = recipe_id
+
+        with raises(ValueError) as exception_info:
+            # REinsere o ingrediente na receita de teste
+            recipes_DB.remIngredientFromRecipe(_id, 'wrong_id')
+
+        assert exception_info.match('Ingrediente não inserido na receita.')
+
+    #
+    # getIngredientsListFromRecipe
+    #
+
+    # @pytest.mark.skip(reason="no way of currently testing this")
+    def test_getIngredientsListFromRecipe_OK(self, recipes_DB):
+
+        recipe = Recipe('__pet__12',
+                        '__tutor__',
+                        '__nutricionist__',
+                        '__recipe_name__')
+
+        recipe_id, registrationNumber = recipes_DB.addRecipe(recipe)
+
+        quantidade = 3
+
+        ingr_DB = IngredientsDB()
+
+        #
+        # Pegar IDs de Ingredientes
+        #
+
+        ingredients_idsList = list(
+            ingr_DB.Ingredients.find({}, {'_id': 1}).limit(quantidade))
+
+        for ingredient_id in ingredients_idsList:
+
+            #
+            # Gera os objetos IngredientInRecipe
+            #
+
+            ingredient = ingr_DB.getIngredientBy_id(ingredient_id['_id'])
+            newestFactors = ingr_DB.getNewestActualFactor(
+                ingredient_id['_id'])
+
+            ingredientInRecipe = IngredientInRecipe(
+                ingredient, newestFactors, 0.35)
+
+            #
+            # Insere os ingredientes na receita de teste
+            #
+
+            recipes_DB.addIngredientToRecipe(recipe_id, ingredientInRecipe)
+
+        if len(recipes_DB.getIngredientsListFromRecipe(recipe_id))\
+                != quantidade:
+            assert False
+
+        recipes_DB.removeRecipe(recipe_id)
+
+    # @pytest.mark.skip(reason="no way of currently testing this")
+    def test_getIngredientsListFromRecipe_Bad_id(self, recipes_DB):
+        bad_id = -2
+
+        with raises(ValueError) as exception_info:
+            recipes_DB.getIngredientsListFromRecipe(bad_id)
+
+        assert exception_info.match(
+            'Impossível encontrar receita _id: ' + str(bad_id))
+
+    # @pytest.mark.skip(reason="no way of currently testing this")
+    def test_getIngredientsListFromRecipe_empty_list(self, recipes_DB):
+        recipe = Recipe('__pet__13',
+                        '__tutor__',
+                        '__nutricionist__',
+                        '__recipe_name__')
+
+        recipe_id, registrationNumber = recipes_DB.addRecipe(recipe)
+
+        if len(recipes_DB.getIngredientsListFromRecipe(recipe_id))\
+                != 0:
+            assert False
+
+        recipes_DB.removeRecipe(recipe_id)

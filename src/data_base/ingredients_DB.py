@@ -29,25 +29,27 @@ class IngredientsDB(MongoDataBase):
         # searchableName = unidecode.unidecode(dict['name']).upper()
         searchableName = self.getExactSearchableRegex(dict['name'])
 
-        if self.Ingredientes.find_one({'searchable': searchableName}):
+        if self.Ingredients.find_one({'searchable': searchableName}):
             raise ValueError('Ingrediente já cadastrado.')
         else:
             # Adiciona ingrediente no BD
-            self.Ingredientes.insert_one(dict)
+            _id = self.Ingredients.insert_one(dict)
+            return _id.inserted_id
 
     def removeIngredient(self, _id):
-        result = self.Ingredientes.delete_one({'_id': _id})
+        result = self.Ingredients.delete_one({'_id': _id})
         if result.deleted_count == 0:
-            raise ValueError('Não foi possível deletar o documento.')
+            raise ValueError(
+                'Não foi possível deletar o ingrediente para remover.')
 
-    def getAllIngredientsCursor(self):
-        return self.Ingredientes.find()
+    # def getAllIngredientsCursor(self):
+    #     return self.Ingredients.find()
 
     def getIngredientsCursorByNameSimilarity(self, name):
         # regx = re.compile(r'(?i){}'.format(name))
         regx = self.getSimilaritySearchableRegex(name)
 
-        return self.Ingredientes.find(
+        return self.Ingredients.find(
                 {'searchable': regx}
             )
 
@@ -55,7 +57,7 @@ class IngredientsDB(MongoDataBase):
         # regx = re.compile(r'(?i){}'.format(name))
         regx = self.getSimilaritySearchableRegex(name)
 
-        ingredientNamesList = self.Ingredientes.find(
+        ingredientNamesList = self.Ingredients.find(
             {'searchable': regx},
             {'_id': 0, 'name': 1}
         ).distinct('name')
@@ -66,7 +68,7 @@ class IngredientsDB(MongoDataBase):
         # regx = re.compile(r'(?i)^{}$'.format(name))
         regx = self.getExactSearchableRegex(name)
 
-        ingredient = self.Ingredientes.find_one(
+        ingredient = self.Ingredients.find_one(
             {'searchable': regx}, {'_id': 1})
 
         if ingredient is None:
@@ -76,7 +78,7 @@ class IngredientsDB(MongoDataBase):
 
     def getIngredientBy_id(self, _id):
 
-        ingredient = self.Ingredientes.find_one({'_id': _id})
+        ingredient = self.Ingredients.find_one({'_id': _id})
 
         if ingredient is None:
             raise ValueError('Impossível encontrar ingrediente: ' + str(_id))
@@ -91,7 +93,7 @@ class IngredientsDB(MongoDataBase):
         if not isinstance(costItem, CostItem):
             raise ValueError('Tipo de dado do custo inválido.')
 
-        result = self.Ingredientes.update_one(
+        result = self.Ingredients.update_one(
                 {'_id': _id},
                 {'$push': {'costLog': costItem.dict}}
             )
@@ -100,7 +102,7 @@ class IngredientsDB(MongoDataBase):
             raise RuntimeError('Custo não atualizado')
 
     def getNewestCost(self, _id):
-        cursor = self.Ingredientes.aggregate([
+        cursor = self.Ingredients.aggregate([
                 {'$match': {'_id': _id}},
                 {'$project': {
                     'costLog': 1,
@@ -141,7 +143,7 @@ class IngredientsDB(MongoDataBase):
         if not isinstance(newFactorsItem, FactorsItem):
             raise ValueError('Tipo de dado dos fatores é inválido.')
 
-        result = self.Ingredientes.update_one(
+        result = self.Ingredients.update_one(
             {'_id': _id},
             {'$push': {'factorsLog': newFactorsItem.dict}}
         )
@@ -150,7 +152,7 @@ class IngredientsDB(MongoDataBase):
             raise RuntimeError('Fatores não atualizados')
 
     def getNewestFactors(self, _id):
-        cursor = self.Ingredientes.aggregate([
+        cursor = self.Ingredients.aggregate([
             {'$match': {'_id': _id}},
             {'$project': {
                 'factorsLog': 1,
@@ -190,3 +192,12 @@ class IngredientsDB(MongoDataBase):
             raise err
 
         return ingredientNewestFactorsItem['actualFactor']
+
+    def getDataToIngredientRecipe(self, _id):
+        try:
+            ingredientDict = self.getIngredientBy_id(_id)
+            newestActualFactor = self.getNewestActualFactor(_id)
+        except ValueError as err:
+            raise err
+
+        return ingredientDict, newestActualFactor

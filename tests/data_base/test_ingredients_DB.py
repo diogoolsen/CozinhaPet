@@ -76,7 +76,7 @@ class TestIngredientsDB():
 
     def test_addIngredient(self, ing_DB, ingredient_id):
 
-        actual = ing_DB.Ingredientes.find_one({'name': '__teste_v1__'})
+        actual = ing_DB.Ingredients.find_one({'name': '__teste_v1__'})
 
         assert ingredient_id is not None
         assert actual['_id'] == ingredient_id
@@ -129,7 +129,8 @@ class TestIngredientsDB():
             ing_DB.removeIngredient(12112)
 
         # Check if ValueError contains correct message
-        assert exception_info.match('Não foi possível deletar o documento.')
+        assert exception_info.match(
+            'Não foi possível deletar o ingrediente para remover.')
 
     def test_removeIngredient(self, ing_DB, ingredient_id):
 
@@ -140,14 +141,14 @@ class TestIngredientsDB():
         except ValueError:
             assert False
 
-        _id_v1 = ing_DB.Ingredientes.find_one({'name': '__teste_v2__'})['_id']
+        _id_v1 = ing_DB.Ingredients.find_one({'name': '__teste_v2__'})['_id']
 
         try:
             ing_DB.removeIngredient(_id_v1)
         except ValueError:
             assert False
 
-        _id_v2 = ing_DB.Ingredientes.find_one({'name': '__teste_v2__'})
+        _id_v2 = ing_DB.Ingredients.find_one({'name': '__teste_v2__'})
 
         assert _id_v1 is not None
         assert _id_v2 is None
@@ -177,7 +178,7 @@ class TestIngredientsDB():
         except ValueError:
             assert False
 
-        _id_v2 = ing_DB.Ingredientes.find_one(
+        _id_v2 = ing_DB.Ingredients.find_one(
             {'name': '__teste_v1__'}).get('_id')
 
         assert _id_v1 == _id_v2
@@ -405,3 +406,18 @@ class TestIngredientsDB():
         # Check if ValueError contains correct message
         assert exception_info.match(
             'Pesquisa de Fatores mais recentes falhou.')
+
+    def test_getDataToIngredientRecipe_OK(self, ing_DB, ingredient_id):
+        try:
+            ing_DB.getDataToIngredientRecipe(ingredient_id)
+        except ValueError:
+            assert False
+
+    def test_getDataToIngredientRecipe_bad_id(self, ing_DB):
+        wrong_id = -2
+
+        with raises(ValueError) as exception_info:
+            ing_DB.getDataToIngredientRecipe(wrong_id)
+
+        assert exception_info.match(
+            ('Impossível encontrar ingrediente: ' + str(wrong_id)))

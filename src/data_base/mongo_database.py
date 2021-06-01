@@ -21,8 +21,8 @@ class MongoDataBase():
         # Acessa o banco de dados 'CozinhaPetDB'
         self.CozinhaPetDB = self.client.CozinhaPetDB
 
-        # Acessa a coleção 'Ingredientes'
-        self.Ingredientes = self.CozinhaPetDB.Ingredientes
+        # Acessa a coleção 'Ingredients'
+        self.Ingredients = self.CozinhaPetDB.Ingredients
 
         # Acessa a coleção 'Recipes'
         self.Recipes = self.CozinhaPetDB.Recipes

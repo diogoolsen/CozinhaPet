@@ -1,7 +1,7 @@
 
 from pymongo.collection import ReturnDocument
 
-from src.model.recipe import Recipe
+from src.model import Recipe, IngredientInRecipe
 from src.data_base.mongo_database import MongoDataBase
 
 
@@ -34,6 +34,14 @@ class RecipesDB(MongoDataBase):
     #
     # Manipulate Recipes
     #
+
+    def isRecipeInDB(self, _id):
+        recipe = self.Recipes.find_one({'_id': _id})
+
+        if recipe is None:
+            raise ValueError('Impossível encontrar receita _id: ' + str(_id))
+
+        return True
 
     def addRecipe(self, recipe):
         # Verificar se já não está no banco
@@ -129,3 +137,93 @@ class RecipesDB(MongoDataBase):
     #
     # Manipulate Ingredients In Recipe
     #
+
+    # def findIngredientInRecipe(self, recipe_id, ingredient_id):
+    #     ingredient = self.Recipes.find_one(
+    #             {'_id': recipe_id,
+    #              'ingredientsRecipeList.ingredient_id': ingredient_id
+    #              }
+    #         )
+
+    #     if ingredient is None:
+    #         raise ValueError('Ingrediente não encontrado na receita')
+
+    #     return ingredient
+
+    def isIngredientInRecipe(self, recipe_id, ingredient_id):
+        ingredient = self.Recipes.find_one(
+            {'_id': recipe_id,
+             'ingredientsRecipeList.ingredient_id': ingredient_id
+             }
+        )
+
+        if ingredient is None:
+            return False
+        else:
+            return True
+
+    def addIngredientToRecipe(self, recipe_id, ingredientInRecipe):
+        try:
+            self.isRecipeInDB(recipe_id)
+        except ValueError as err:
+            raise err
+
+        if not isinstance(ingredientInRecipe, IngredientInRecipe):
+            raise ValueError(
+                'Tipo de dado do ingrediente da receita inválido.')
+
+        if self.isIngredientInRecipe(
+                recipe_id,
+                ingredientInRecipe.dict['ingredient_id']):
+
+            raise ValueError('Ingrediente já inserido na receita - '
+                             'Atualize seu valor.')
+
+        result = self.Recipes.update_one(
+            {'_id': recipe_id},
+            {'$push': {'ingredientsRecipeList': ingredientInRecipe.dict}}
+        )
+
+        if result.modified_count != 1:
+            raise RuntimeError('Ingrediente não atualizado!')
+
+    def remIngredientFromRecipe(self, recipe_id, ingredient_id):
+        try:
+            self.isRecipeInDB(recipe_id)
+        except ValueError as err:
+            raise err
+
+        if not self.isIngredientInRecipe(recipe_id, ingredient_id):
+            raise ValueError('Ingrediente não inserido na receita.')
+
+        result = self.Recipes.update_one(
+            {'_id': recipe_id},
+            {'$pull': {
+                'ingredientsRecipeList': {'ingredient_id': ingredient_id}
+            }}
+        )
+
+        #
+        # Verificar se esta operação não está removendo ou
+        #  - todos os itens com o mesmo id desta receita
+        #  - todos os itens com o mesmo id de qualquer receita
+        #
+
+        if result.modified_count != 1:
+            raise RuntimeError('Ingrediente não atualizado!' + str(result))
+
+    def getIngredientsListFromRecipe(self, recipe_id):
+        try:
+            self.isRecipeInDB(recipe_id)
+        except ValueError as err:
+            raise err
+
+        ingredientsList = self.Recipes.find_one(
+            {'_id': recipe_id},
+            {'_id': 0, 'ingredientsRecipeList': 1}
+        )
+
+        if ingredientsList is None:
+            raise RuntimeError('Impossível encontrar lista.')
+
+        return ingredientsList['ingredientsRecipeList']
